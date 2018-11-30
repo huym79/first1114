@@ -188,7 +188,7 @@
  </springProfile>
  
  <springProfile name="dev">
-  <root level="DEBUG">
+  <root level="INFO">
    <appender-ref ref="FILEERROR"/>
    <appender-ref ref="FILEWARN"/>
    <appender-ref ref="FILEINFO"/>
