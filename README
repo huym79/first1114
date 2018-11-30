@@ -1,0 +1,62 @@
+下面具体记录一下，如何在IDEA下从零开始，一步步搭建SpringBoot Web应用，这里采用的是maven作依赖管理
+（1）File->new,选择maven，创建一个空项目，直接next.
+（2）填写工程名
+（3）next到底，成果创建一个基于maven的空Java项目
+（4）在pom文件中引入SpringBoot相关依赖
+（5）新建一个controller 包，用于存放所有的controller，这里跟官方的一样，使用SampleController为第一个测试用例。
+注意到，这里有一个main函数，再联想到前面说的，SpringBoot应用一般是打包成可执行jar包来发布的，这个main函数就是整个项目的入口。
+而之所以能这么做，是因为SpringBoot连Tomcat8作为一个插件都集成进去了，所以就不必跟之前的SSM架构下一样，还需要去在Tomcat下配置war包才能运行。
+直接点击运行该main函数，再浏览器链接栏，输入地址http://localhost:8080/，就可以看到打印的字符串”Hello World!”了。
+这就是官网提供的一个最基本的基于SpringBoot的Web应用，如此便捷。 
+
+下面要说的是，如何在上面的基础上，搭建一个具有MVC结构的完整的Web应用。
+其中数据库采用的是Mysql，ORM采用的是Spring Data JPA，前端页面采用js+html5。
+（当然还有其他的方式，例如ORM框架采用mybatis等，本文暂未涉及。）
+
+（6）在resource目录下新建一个application.properties文件（或yml文件）,命名与位置为SpringBoot默认的配置文件。
+在该文件中，记录着所有的模块配置内容。例如Tomcat的端口（默认8080）以及编码方式等
+（7）引入本项目中所需要的相关依赖(MySQL连接驱动 以及Spring Data JPA,thymeleaf模板引擎)
+（8）在application.properties中配置MySQL数据库连接信息
+这里的数据库为本地数据库test,用户名和密码改成自己的
+（9）在application.properties中配置Spring Data JPA
+数据库类型为MYSQL
+日志信息打印具体执行的sql语句
+表更新策略以及Java类到数据库表字段的映射规则等
+（10）编写一个实体类User
+@Table标签，指定数据库中对应的表名，id配置为主键，生成策略为自动生成
+（11）基于JPA，实现DAO层（即数据库数据的增删改查操作）
+新建UserRepositoty.java接口文件
+需要解释的是，Spring Data JPA提供了很多持久层接口，例如Repository,CrudRepositoty,PagingAndSortingRepository 以及JpaRepository 接口。
+其中Repository为基类，JpaRepository继承自PagingAndSortingRepository接口，两个泛型参数分别代表Java POJO类以及主键数据类型。
+我们创建自己的数据库操作接口时，只需继承上述JPA提供的某个接口，即可自动继承相关数据操作方法，而不需要再次实现。
+例如CrudRepositoty提供了对增删改查操作的实现，PagingAndSortingRepository提供了分页查询方法的实现。
+另外JPA提供了一套命名规则例如readBy**()等，这些方法也只需要用户申明而由JPA自动实现了。
+如果这仍不能满足业务需求，也可以自定义SQL查询语句，例如上述代码所示，采用@Query标签， 其中 ：*语法为引用下面用@Param标识的变量，需要注意的是其中User不是表面而是Java POJO类名。
+具体使用参考JPA使用手册。 
+（12）设计Service层业务代码
+新建UserService类
+（13）设计Controller层
+新建UserController.java，提供两个接口，/user/index 返回页面，/user/show返回数据。
+（14）在application.properties文件中配置页面引擎。
+这里采用SpringMVC（SpringBoot还提供thymeleaf，freemaker等）。
+这里需要配置其静态资源（js、css文件、图片文件等）路径，以及html页面文件路径，参考SpringMVC在Spring下的配置。
+（15）在resource目录下新建templates以及static目录，分别用于存放html文件以及（js、css文件、图片)文件。
+在（13）中返回了一个“user/index”页面，所以在templates下新建user目录，在user目录下新建index.html页面
+这里就不写什么了，默认页面，通过相对路径引入js文件，js文件里只做示意，弹出一个alert()。 
+（16）配置JPA
+新建一个configuration包，用于存放项目配置类。
+类似SSM架构下，spring需要配置Java POJO类包路径以及DAO层接口路径，以自动扫描相关注解，这里同样需要配置这两项
+不同的是Spring采取的是xml配置方式，这里用Java代码+注解方式配置。新建一个JpaConfiguration.java类
+（17）配置项目启动入口
+到这一步就可以删掉（5）中官方示例给出的SampleController.java了
+由于我们的工程结构已经发生了改变，我们需要告诉SpringBoot框架去扫描哪些包从而加载对应类，所以这里重新编写main函数。
+新建一个Entry.java类，其代码如下（其中@SpringBootApplication是一个复合注解，就理解为自动配置吧）
+（18）运行main函数
+访问http://localhost:8080/user/index 会显示测试页面，并弹出alert()
+访问http://localhost:8080/user/show?name=**(数据表里存在的数据)会显示user信息。
+
+
+
+
+参考：IDEA下从零开始搭建SpringBoot工程
+https://blog.csdn.net/u013248535/article/details/55100979/
